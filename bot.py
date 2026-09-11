@@ -28,7 +28,7 @@ class HealthCheckHandler(BaseHTTPRequestHandler):
         self.end_headers()
 
     def log_message(self, format, *args):
-        return  # إخفاء سجلات طلبات الفحص الدورية لعدم ملء الشاشة
+        return
 
 def start_health_server():
     port = int(os.environ.get("PORT", 10000))
@@ -41,9 +41,7 @@ if not GEMINI_API_KEY:
     logger.error("لم يتم العثور على GEMINI_API_KEY في متغيرات البيئة!")
 
 ai_client = genai.Client(api_key=GEMINI_API_KEY) if GEMINI_API_KEY else None
-
-# تغيير النموذج إلى 2.0 للحصول على الحصة المجانية الأكبر (1500 طلب يومياً)
-MODEL_ID = 'gemini-2.0-flash'
+MODEL_ID = 'gemini-3.6-flash'
 
 SYSTEM_INSTRUCTION = """أنت المعلم مساعد سعدي الذبياني، خبير متقدم ومتقن للغة العربية، النحو، الصرف، والإعراب.
 إجاباتك دقيقة، مبسطة، وتعتمد على القواعد النحوية المعتمدة، مع الشرح والتوضيح بأسلوب تعليمي راقٍ."""
@@ -76,7 +74,10 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(response.text)
     except Exception as e:
         logger.error(f"خطأ في Gemini النصي: {e}")
-        await update.message.reply_text("❌ حدث خطأ أثناء معالجة النص، يرجى المحاولة لاحقاً.")
+        if "429" in str(e) or "RESOURCE_EXHAUSTED" in str(e):
+            await update.message.reply_text("⏳ الخدمة مشغولة حالياً بكثرة الطلبات، يرجى إعادة المحاولة بعد دقيقة.")
+        else:
+            await update.message.reply_text("❌ حدث خطأ أثناء معالجة النص، يرجى المحاولة لاحقاً.")
 
 async def handle_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
     logger.info("استلام صورة من المستخدم")
@@ -106,11 +107,13 @@ async def handle_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(response.text)
     except Exception as e:
         logger.error(f"خطأ في Gemini الصوري: {e}")
-        await update.message.reply_text("❌ حدث خطأ أثناء معالجة الصورة، يرجى المحاولة لاحقاً.")
+        if "429" in str(e) or "RESOURCE_EXHAUSTED" in str(e):
+            await update.message.reply_text("⏳ الخدمة مشغولة حالياً بكثرة الطلبات، يرجى إعادة المحاولة بعد دقيقة.")
+        else:
+            await update.message.reply_text("❌ حدث خطأ أثناء معالجة الصورة، يرجى المحاولة لاحقاً.")
 
 # 5. نقطة التشغيل الرئيسية
 def main():
-    # تشغيل سيرفر الفحص الصحي في خيط مستقل
     health_thread = threading.Thread(target=start_health_server, daemon=True)
     health_thread.start()
     logger.info("تم تشغيل سيرفر الصحة الخاص بـ Render.")
