@@ -41,7 +41,9 @@ if not GEMINI_API_KEY:
     logger.error("لم يتم العثور على GEMINI_API_KEY في متغيرات البيئة!")
 
 ai_client = genai.Client(api_key=GEMINI_API_KEY) if GEMINI_API_KEY else None
-MODEL_ID = 'gemini-3.6-flash'
+
+# تغيير النموذج إلى 2.0 للحصول على الحصة المجانية الأكبر (1500 طلب يومياً)
+MODEL_ID = 'gemini-2.0-flash'
 
 SYSTEM_INSTRUCTION = """أنت المعلم مساعد سعدي الذبياني، خبير متقدم ومتقن للغة العربية، النحو، الصرف، والإعراب.
 إجاباتك دقيقة، مبسطة، وتعتمد على القواعد النحوية المعتمدة، مع الشرح والتوضيح بأسلوب تعليمي راقٍ."""
