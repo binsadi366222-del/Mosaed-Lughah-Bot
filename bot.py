@@ -57,7 +57,7 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     try:
         response = client.models.generate_content(
-            model="gemini-2.5-flash",
+            model="gemini-1.5-flash",
             contents=user_text,
             config=types.GenerateContentConfig(system_instruction=SYSTEM_INSTRUCTION)
         )
@@ -76,7 +76,7 @@ async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
         caption = update.message.caption or "اقرأ الأسئلة أو النصوص الموجودة في هذه الصورة واشرحها أو قم بإعرابها بوضوح."
         
         response = client.models.generate_content(
-            model="gemini-2.5-flash",
+            model="gemini-1.5-flash",
             contents=[
                 types.Part.from_bytes(data=bytes(image_bytes), mime_type="image/jpeg"),
                 caption
@@ -86,7 +86,7 @@ async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(response.text)
     except Exception as e:
         logger.error(f"خطأ في تحليل الصورة: {e}")
-        await update.message.reply_text("❌ تعذر تحليل الصورة، يرجى التأكد من وضوح الخط وإعادة المحاولة.")
+        await update.message.reply_text("❌ تعذر تحليل الصورة، يرجى التأكد من ووضوح الخط وإعادة المحاولة.")
 
 if __name__ == "__main__":
     app = ApplicationBuilder().token(TELEGRAM_TOKEN).build()
